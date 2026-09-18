@@ -37,11 +37,11 @@ const PRESETS = [
 ];
 
 const money = (value) => `$${Math.round(value).toLocaleString("en-US")}`;
-const chartMoney = (value) => {
+const chartAxisValue = (value) => {
   if (Math.abs(value) >= 1000000) {
-    return `$${(value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 1)}m`;
+    return `${(value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 1)}m`;
   }
-  return `$${Math.round(value / 1000)}k`;
+  return `${Math.round(value / 1000)}k`;
 };
 const numberValue = (value) =>
   parseFloat(String(value).replace(/[^0-9.]/g, "")) || 0;
@@ -258,12 +258,12 @@ function App() {
             </div>
             <div className="charts">
               <div>
-                <small>Balance over time{adjustInflation ? " · today's dollars" : ""}</small>
+                <small>Balance over time · USD{adjustInflation ? " · today's dollars" : ""}</small>
                 <ResponsiveContainer width="100%" height={240}>
                   <AreaChart data={result.series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                     <CartesianGrid stroke={COLORS.hair} vertical={false} />
                     <XAxis dataKey="year" tickFormatter={(value) => `${value}y`} stroke={COLORS.paperDim} />
-                    <YAxis width={52} tickFormatter={chartMoney} stroke={COLORS.paperDim} />
+                    <YAxis width={42} tickFormatter={chartAxisValue} stroke={COLORS.paperDim} />
                     <Tooltip content={<TooltipContent inflationAdjusted={adjustInflation} />} />
                     <Area type="monotone" dataKey="contributed" stackId="a" stroke={COLORS.moss} fill={COLORS.moss} fillOpacity={0.55} />
                     <Area type="monotone" dataKey="growth" stackId="a" stroke={COLORS.gold} fill={COLORS.gold} fillOpacity={0.55} />
