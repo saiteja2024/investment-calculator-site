@@ -41,7 +41,8 @@ const chartAxisValue = (value) => {
   if (Math.abs(value) >= 1000000) {
     return `${(value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 1)}m`;
   }
-  return `${Math.round(value / 1000)}k`;
+  if (Math.abs(value) >= 1000) return `${Math.round(value / 1000)}K`;
+  return Math.round(value).toString();
 };
 const numberValue = (value) =>
   parseFloat(String(value).replace(/[^0-9.]/g, "")) || 0;
@@ -123,6 +124,17 @@ function TooltipContent({ active, payload, label, inflationAdjusted }) {
   );
 }
 
+function DonutTooltip({ visible, contributed, growth }) {
+  if (!visible) return null;
+  return (
+    <div className="tooltip donut-tooltip">
+      <div>● Contributed: {money(contributed)}</div>
+      <div>● Growth: {money(growth)}</div>
+      <strong>Total: {money(contributed + growth)}</strong>
+    </div>
+  );
+}
+
 function App() {
   const [initial, setInitial] = useState(DEFAULT_PLAN.initial);
   const [monthly, setMonthly] = useState(DEFAULT_PLAN.monthly);
@@ -131,6 +143,7 @@ function App() {
   const [adjustInflation, setAdjustInflation] = useState(false);
   const [inflation, setInflation] = useState(3);
   const [activePreset, setActivePreset] = useState("Steady builder");
+  const [isDonutHovered, setIsDonutHovered] = useState(false);
 
   const updatePlan = (setField) => (value) => {
     setField(value);
@@ -201,6 +214,11 @@ function App() {
             See how much comes from what you put in, and how much comes from
             growth — in real, spendable terms if you want.
           </p>
+          <blockquote>
+            “Compound interest is the eighth wonder of the world. He who
+            understands it, earns it; he who doesn&apos;t, pays it.”
+            <cite>Commonly attributed to Albert Einstein</cite>
+          </blockquote>
         </header>
         <section className="scenario-picker" aria-label="Investment scenarios">
           <div>
@@ -263,7 +281,7 @@ function App() {
                   <AreaChart data={result.series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                     <CartesianGrid stroke={COLORS.hair} vertical={false} />
                     <XAxis dataKey="year" tickFormatter={(value) => `${value}y`} stroke={COLORS.paperDim} />
-                    <YAxis width={42} tickFormatter={chartAxisValue} stroke={COLORS.paperDim} />
+                    <YAxis width={56} tickFormatter={chartAxisValue} stroke={COLORS.paperDim} />
                     <Tooltip content={<TooltipContent inflationAdjusted={adjustInflation} />} />
                     <Area type="monotone" dataKey="contributed" stackId="a" stroke={COLORS.moss} fill={COLORS.moss} fillOpacity={0.55} />
                     <Area type="monotone" dataKey="growth" stackId="a" stroke={COLORS.gold} fill={COLORS.gold} fillOpacity={0.55} />
@@ -274,12 +292,21 @@ function App() {
                 <small>Contributed vs. growth</small>
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
-                    <Pie data={[{ value: result.contributed }, { value: result.growth }]} dataKey="value" innerRadius={58} outerRadius={80} paddingAngle={2}>
+                    <Pie
+                      data={[{ value: result.contributed }, { value: result.growth }]}
+                      dataKey="value"
+                      innerRadius="58%"
+                      outerRadius="84%"
+                      paddingAngle={2}
+                      onMouseEnter={() => setIsDonutHovered(true)}
+                      onMouseLeave={() => setIsDonutHovered(false)}
+                    >
                       <Cell fill={COLORS.moss} /><Cell fill={COLORS.gold} />
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
                 <strong>{growthShare}%<small>from growth</small></strong>
+                <DonutTooltip visible={isDonutHovered} contributed={result.contributed} growth={result.growth} />
               </div>
             </div>
             <div className="affiliate">
